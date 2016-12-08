@@ -38,13 +38,22 @@ public class loader
         for (int i = 1; i < 5; i++)
         {
         	System.out.println("Inserting Client id:" + i );
-        	//insertClientDetails(i);
+        	insertClientDetails(i);
         	//insertClientOrders(i);
         }
         Scanner reader = new Scanner(System.in);
         System.out.println("Waiting before we cleanup ");
         int n = reader.nextInt();
-        cleanup();		
+        
+        
+        try {
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+      cleanup();
     }
     public static void cleanup()
     {
@@ -97,6 +106,13 @@ public class loader
     		
     	});
     	
+    	try {
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     }
     private static void createConnection()
     {
@@ -123,6 +139,8 @@ public class loader
     	{
     		System.out.println("error creating statement for schema creatioin");
     	}
+    	
+    	
     	String sql = "CREATE SCHEMA CRM";
     	System.out.println(sql);
     	try {
@@ -133,6 +151,8 @@ public class loader
 			System.out.println("failed to execute sql statement creating CRM schema");
 			e.printStackTrace();
 		}
+    	
+    	
     	System.out.println("Creating CRM.Contacts table");
     	sql = "CREATE TABLE CRM.CONTACTS " +
                 "(ROW_ID INTEGER NOT NULL, " +
@@ -150,6 +170,7 @@ public class loader
 			e.printStackTrace();
 		}
     	
+    	
     	System.out.println("Creating CRM.EMPLOYEES table");
     	sql = "CREATE TABLE CRM.EMPLOYEES " +
                 "(ROW_ID INTEGER NOT NULL, " +
@@ -166,6 +187,7 @@ public class loader
 			System.out.println("failed to execute sql statement bulding employees");
 			e.printStackTrace();
 		}
+    	
     	
     	System.out.println("Creating CRM.ADDRESSES table");
     	sql = "CREATE TABLE CRM.ADDRESSES " +
@@ -185,6 +207,8 @@ public class loader
 			System.out.println("failed to execute sql statement bulding employees");
 			e.printStackTrace();
 		}
+    	
+    	
     	
     	sql = "CREATE SCHEMA HR";
     	System.out.println(sql);
@@ -256,6 +280,9 @@ public class loader
 			e.printStackTrace();
 		}
     }
+    
+    
+    
     private static void insertClientDetails(int id)
     {
     	Faker faker = new Faker();
@@ -264,24 +291,126 @@ public class loader
     	String address = faker.address().streetAddress();
     	String city = faker.address().cityName();
     	String state = faker.address().stateAbbr();
-    	//String stmtString = "insert into " + tableName + " values(" + id + ",'"+ fname +"','" + lname + "')";
-    	//System.out.println(stmtString);
-    	String stmtString = "insert into " + tableName + " values(?,?,?,?,?,?)";
+    	
+    	//tables are CRM.Contacts, CRM.EMPLOYEES, CRM.ADDRESSES, HR.EMPLOYEES, HR.ADDRESS, HR.COMPENSATION
+    	
+    	String stmtString = "insert into CRM.CONTACTS values(?,?,?,?,?)";
     	try 
     	{
     	PreparedStatement pstmt = conn.prepareStatement(stmtString);
     	pstmt.setInt(1, id);
-    	pstmt.setString(2, fname);
-    	pstmt.setString(3, lname);
-    	pstmt.setString(4, address);
-    	pstmt.setString(5, city);
-    	pstmt.setString(6, state);
+    	pstmt.setString(2, "lastUpdate"); 
+    	pstmt.setString(3, fname);
+    	pstmt.setString(4, lname);
+    	pstmt.setString(5, fname+lname+"@gmail.com");
+    	
     	pstmt.executeUpdate();
+    	conn.commit();
     	}
     	catch (SQLException e)
     	{
     		e.printStackTrace();
     	}
+    	
+    	stmtString = "insert into CRM.EMPLOYEES values(?,?,?,?,?)";
+    	try 
+    	{
+    	PreparedStatement pstmt = conn.prepareStatement(stmtString);
+    	pstmt.setInt(1, id);
+    	pstmt.setString(2, "lastUpdate"); 
+    	pstmt.setInt(3, id);
+    	pstmt.setString(4, lname+"."+fname);
+    	pstmt.setString(5, "department");
+    	
+    	pstmt.executeUpdate();
+    	conn.commit();
+    	}
+    	catch (SQLException e)
+    	{
+    		e.printStackTrace();
+    	}
+    	
+    	stmtString = "insert into CRM.ADDRESSES values(?,?,?,?,?,?,?)";
+    	try 
+    	{
+    	PreparedStatement pstmt = conn.prepareStatement(stmtString);
+    	pstmt.setInt(1, id);
+    	pstmt.setString(2, address); 
+    	pstmt.setString(3, address); //placeholder for street address2
+    	pstmt.setString(4, city);
+    	pstmt.setString(5, state); //placeholder for county
+    	pstmt.setString(6, city); //placeholder for country
+    	pstmt.setString(7, city); //placeholder for zip
+    	
+    	pstmt.executeUpdate();
+    	conn.commit();
+    	}
+    	catch (SQLException e)
+    	{
+    		e.printStackTrace();
+    	}
+    	
+    	stmtString = "insert into HR.EMPLOYEES values(?,?,?,?,?,?,?,?)";
+    	try 
+    	{
+    	PreparedStatement pstmt = conn.prepareStatement(stmtString);
+    	pstmt.setInt(1, id);
+    	pstmt.setString(2, "lastUpdate"); 
+    	pstmt.setString(3, fname); //placeholder for street address2
+    	pstmt.setString(4, lname);
+    	pstmt.setString(5, fname+lname+"@gmail.com"); //placeholder for county
+    	pstmt.setString(6, "9999999999"); //placeholder for phone number
+    	pstmt.setString(7, "department"); //placeholder for dept
+    	pstmt.setString(8, "reportingManager"); //placeholder for reports to
+    	
+    	pstmt.executeUpdate();
+    	conn.commit();
+    	}
+    	catch (SQLException e)
+    	{
+    		e.printStackTrace();
+    	}
+    	
+    	stmtString = "insert into HR.Address values(?,?,?,?,?,?,?)";
+    	try 
+    	{
+    	PreparedStatement pstmt = conn.prepareStatement(stmtString);
+    	pstmt.setInt(1, id);
+    	pstmt.setString(2, address); 
+    	pstmt.setString(3, address); //placeholder for street address2
+    	pstmt.setString(4, city);
+    	pstmt.setString(5, state); //placeholder for county
+    	pstmt.setString(6, city); //placeholder for country
+    	pstmt.setString(7, city); //placeholder for zip
+    	
+    	pstmt.executeUpdate();
+    	conn.commit();
+    	}
+    	catch (SQLException e)
+    	{
+    		e.printStackTrace();
+    	}
+    	
+    	stmtString = "insert into HR.COMPENSATION values(?,?,?,?,?,?)";
+    	try 
+    	{
+    	PreparedStatement pstmt = conn.prepareStatement(stmtString);
+    	pstmt.setInt(1, id);
+    	pstmt.setString(2, "lastUpdate"); 
+    	pstmt.setInt(3, id); //placeholder for street address2
+    	pstmt.setInt(4, 1000);
+    	pstmt.setString(5, "USD"); //placeholder for county
+    	pstmt.setString(6, "bi-weekly"); //placeholder for country
+    	
+    	pstmt.executeUpdate();
+    	conn.commit();
+    	}
+    	catch (SQLException e)
+    	{
+    		e.printStackTrace();
+    	}
+    	
+    	
     }
     
     private static void insertClientOrders(int id)
